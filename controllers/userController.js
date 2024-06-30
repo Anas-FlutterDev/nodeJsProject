@@ -52,10 +52,11 @@ const registerUser = async (req, res) => {
       const payload = {
         user: {
           id: user.id,
+          isAdmin:user.isAdmin
           // You can include more user information here if needed
         },
       };
-  
+  console.log("see here bro", payload)
       // Sign JWT
       jwt.sign(
         payload,

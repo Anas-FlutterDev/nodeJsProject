@@ -5,10 +5,10 @@ const router = express.Router();
 import cardController from '../controllers/cardController.js'; // assuming .mjs extension for ES modules
 import  auth  from '../middlewares/auth.js'; // assuming .mjs extension for ES modules
 
-router.post('/', auth, cardController.createCard);
-router.get('/', cardController.getAllCards);
-router.get('/:id',cardController.getCardById);
-router.put('/:id', auth,cardController.updateCard);
-router.delete('/:id', auth, cardController.deleteCard);
+router.post('/', cardController.createCard);
+router.get('/',auth(true), cardController.getAllCards);
+router.gecat('/:id',cardController.getCardById);
+router.put('/:id', auth(true),rdController.updateCard);
+router.delete('/:id', auth(true), cardController.deleteCard);
 
 export default router;
