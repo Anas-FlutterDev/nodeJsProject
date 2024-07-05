@@ -2,77 +2,95 @@ import User from '../models/User.js'; // Assuming you have a User model defined
 import jwt from 'jsonwebtoken'
 import config from 'config'
 import bcrypt from 'bcryptjs'
+
+import joi from 'joi'
+
 const registerUser = async (req, res) => {
-    try {
-      const { name, email, password, isBusiness, isAdmin } = req.body;
-  
-      let user = await User.findOne({ email });
-      if (user) {
-        return res.status(400).json({ msg: 'User already exists' });
-      }
-  
-      // Hash the password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-  
-      // Create a new user with the hashed password
-      user = new User({ 
-        name, 
-        email, 
-        password: hashedPassword, 
-        isBusiness, 
-        isAdmin 
-      });
-      await user.save();
-  
-      res.status(201).json({ msg: 'User registered successfully' });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
+  // Define the schema for validation
+  const schema = Joi.object({
+    name: Joi.string().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    isBusiness: Joi.boolean().required(),
+    isAdmin: Joi.boolean().required()
+  });
+
+  // Validate the request body against the schema
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ msg: error.details[0].message });
+  }
+
+  try {
+    const { name, email, password, isBusiness, isAdmin } = req.body;
+
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ msg: 'User already exists' });
     }
-  };
-  
-  const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      // Check if user exists
-      let user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ msg: 'Invalid credentials' });
-      }
-  
-      // Check if password matches
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'Invalid credentials' });
-      }
-  
-      // Prepare JWT payload
-      const payload = {
-        user: {
-          id: user.id,
-          isAdmin:user.isAdmin
-          // You can include more user information here if needed
-        },
-      };
-  console.log("see here bro", payload)
-      // Sign JWT
-      jwt.sign(
-        payload,
-        "thisismyjwtsecret", // Get the secret key from config or environment variables
-        { expiresIn: 3600 }, // Token expires in 1 hour (optional)
-        (err, token) => {
-          if (err) throw err;
-          // Send JWT token to client
-          res.json({ token });
-        }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create a new user with the hashed password
+    user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      isBusiness,
+      isAdmin
+    });
+    await user.save();
+
+    res.status(201).json({ msg: 'User registered successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Check if user exists
+    let user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
     }
-  };
+
+    // Check if password matches
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
+
+    // Prepare JWT payload
+    const payload = {
+      user: {
+        id: user.id,
+        isAdmin: user.isAdmin
+      },
+    };
+
+    // Sign JWT
+    jwt.sign(
+      payload,
+      "thisismyjwtsecret", // Get the secret key from config or environment variables
+      { expiresIn: 3600 }, // Token expires in 1 hour (optional)
+      (err, token) => {
+        if (err) throw err;
+        // Send JWT token to client
+        res.json({ token });
+      }
+    );
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
   
   
 const getAllUsers = async (req, res) => {
