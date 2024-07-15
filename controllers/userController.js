@@ -1,45 +1,59 @@
-import User from '../models/User.js'; // Assuming you have a User model defined
-import jwt from 'jsonwebtoken'
-import config from 'config'
-import bcrypt from 'bcryptjs'
-
-import joi from 'joi'
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import Joi from 'joi';
 
 const registerUser = async (req, res) => {
-  // Define the schema for validation
   const schema = Joi.object({
-    name: Joi.string().min(3).max(30).required(),
+    name: Joi.object({
+      first: Joi.string().min(1).max(30).required(),
+      middle: Joi.string().allow(''),
+      last: Joi.string().min(1).max(30).required()
+    }).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
     isBusiness: Joi.boolean().required(),
-    isAdmin: Joi.boolean().required()
+    isAdmin: Joi.boolean().required(),
+    phone: Joi.string().required(),
+    address: Joi.object({
+      state: Joi.string().allow(''),
+      country: Joi.string().required(),
+      city: Joi.string().required(),
+      street: Joi.string().required(),
+      houseNumber: Joi.string().required()
+    }).required(),
+    image: Joi.object({
+      url: Joi.string().allow(''),
+      alt: Joi.string().allow('')
+    }).required()
   });
 
-  // Validate the request body against the schema
   const { error } = schema.validate(req.body);
   if (error) {
     return res.status(400).json({ msg: error.details[0].message });
   }
 
   try {
-    const { name, email, password, isBusiness, isAdmin } = req.body;
+    const { name, email, password, isBusiness, isAdmin, phone, address, image } = req.body;
+    console.log(req.body)
 
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user with the hashed password
     user = new User({
       name,
       email,
       password: hashedPassword,
       isBusiness,
-      isAdmin
+      isAdmin,
+      phone,
+      address,
+      image
     });
     await user.save();
 
@@ -54,19 +68,16 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
     let user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
-    // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
-    // Prepare JWT payload
     const payload = {
       user: {
         id: user.id,
@@ -74,25 +85,23 @@ const loginUser = async (req, res) => {
       },
     };
 
-    // Sign JWT
     jwt.sign(
       payload,
-      "thisismyjwtsecret", // Get the secret key from config or environment variables
-      { expiresIn: 3600 }, // Token expires in 1 hour (optional)
+      // process.env.JWT_SECRET,
+      "test_secret",
+      { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
-        // Send JWT token to client
         res.json({ token });
       }
     );
   } catch (err) {
     console.error(err.message);
+    console.log(err)
     res.status(500).send('Server error');
   }
 };
 
-  
-  
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -118,7 +127,7 @@ const getUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone, address, image } = req.body;
 
     let user = await User.findById(req.params.id);
     if (!user) {
@@ -127,10 +136,44 @@ const updateUser = async (req, res) => {
 
     user.name = name || user.name;
     user.email = email || user.email;
-    user.password = password || user.password;
-    await user.save();
+    user.phone = phone || user.phone;
+    user.address = address || user.address;
+    user.image = image || user.image;
 
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
     res.json({ msg: 'User updated successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+const patchUser = async (req, res) => {
+  try {
+    const { name, email, password, phone, address, image } = req.body;
+
+    let user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+    if (image) user.image = image;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+    res.json({ msg: 'User patched successfully' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -152,4 +195,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export default { registerUser, loginUser, getAllUsers, getUserById, updateUser, deleteUser };
+export default { registerUser, loginUser, getAllUsers, getUserById, updateUser, patchUser, deleteUser };

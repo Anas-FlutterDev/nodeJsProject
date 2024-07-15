@@ -1,0 +1,296 @@
+{
+    "info": {
+      "name": "Node.js Project APIs",
+      "_postman_id": "unique-id",
+      "description": "API collection for Node.js project",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "User Endpoints",
+        "item": [
+          {
+            "name": "Register User",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n\t\"name\": \"John Doe\",\n\t\"email\": \"john.doe@example.com\",\n\t\"password\": \"password123\",\n\t\"isBusiness\": false,\n\t\"isAdmin\": false\n}"
+              },
+              "url": {
+                "raw": "http://localhost:3000/api/users/register",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "users", "register"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Login User",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n\t\"email\": \"john.doe@example.com\",\n\t\"password\": \"password123\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:3000/api/users/login",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "users", "login"]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const jsonData = pm.response.json();",
+                    "pm.environment.set(\"authToken\", jsonData.token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get User",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:3000/api/users/{id}",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "users", "{id}"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Update User",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n\t\"name\": \"John Doe Updated\",\n\t\"email\": \"john.doe.updated@example.com\",\n\t\"isBusiness\": true,\n\t\"isAdmin\": false\n}"
+              },
+              "url": {
+                "raw": "http://localhost:3000/api/users/{id}",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "users", "{id}"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Delete User",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:3000/api/users/{id}",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "users", "{id}"]
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Card Endpoints",
+        "item": [
+          {
+            "name": "Create Card",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n\t\"title\": \"Sample Card\",\n\t\"description\": \"This is a sample card\",\n\t\"owner\": \"user_id\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:3000/api/cards",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "cards"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Cards",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:3000/api/cards",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "cards"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Card by ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:3000/api/cards/{id}",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "cards", "{id}"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Update Card",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n\t\"title\": \"Updated Card\",\n\t\"description\": \"This is an updated card\"\n}"
+              },
+              "url": {
+                "raw": "http://localhost:3000/api/cards/{id}",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "cards", "{id}"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Delete Card",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}"
+                }
+              ],
+              "url": {
+                "raw": "http://localhost:3000/api/cards/{id}",
+                "protocol": "http",
+                "host": ["localhost"],
+                "port": "3000",
+                "path": ["api", "cards", "{id}"]
+              }
+            },
+            "response": []
+          }
+        ]
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "exec": [
+            "pm.environment.set(\"authToken\", \"\");"
+          ],
+          "type": "text/javascript"
+        }
+      }
+    ]
+  }
+  
